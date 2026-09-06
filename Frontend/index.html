@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Commandes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand-block">
+            <div class="brand-logo">G</div>
+            <div>
+                <p class="brand-kicker">Dashboard</p>
+                <h1>Gestion des Produits & Commandes</h1>
+            </div>
+        </div>
+        <nav class="app-nav" aria-label="Navigation principale">
+            <button data-target="#section-products" class="nav-btn active">Produits</button>
+            <button data-target="#section-create-order" class="nav-btn">Nouvelle commande</button>
+            <button data-target="#section-orders" class="nav-btn">Commandes</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="dashboard-overview">
+            <div class="stat-card accent">
+                <div class="stat-label">Produits</div>
+                <div class="stat-value" id="overview-products">0</div>
+                <div class="stat-meta">Catalogue actif</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Stock total</div>
+                <div class="stat-value" id="overview-stock">0</div>
+                <div class="stat-meta">Unités disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Commandes</div>
+                <div class="stat-value" id="overview-orders">0</div>
+                <div class="stat-meta">Historique complet</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">CA estimé</div>
+                <div class="stat-value" id="overview-ca">0,00 dh</div>
+                <div class="stat-meta">Montant total</div>
+            </div>
+        </section>
+
+        <section class="quick-actions">
+            <button type="button" class="quick-action primary" data-target="#section-products">＋ Nouveau produit</button>
+            <button type="button" class="quick-action" data-target="#section-create-order">🛒 Passer commande</button>
+            <button type="button" class="quick-action" data-target="#section-orders">📊 Voir historique</button>
+        </section>
+
+        <!-- SECTION PRODUITS : sidebar formulaire + catalogue visuel -->
+        <section id="section-products" class="section visible">
+            <div class="section-top">
+                <div>
+                    <h2>Produits</h2>
+                    <small class="muted">Gérez le catalogue et les stocks</small>
+                </div>
+            </div>
+
+            <div class="products-layout">
+
+                <!-- Sidebar gauche : formulaire + liste admin -->
+                <div class="products-sidebar">
+                    <form id="product-form" class="card" autocomplete="off">
+                        <div class="form-label-header">✏️ Formulaire produit</div>
+                        <input type="hidden" id="product-id">
+                        <div class="form-col">
+                            <label>Nom du produit
+                                <input id="product-name" type="text" placeholder="ex: Stylo BIC" required>
+                            </label>
+                            <label>Catégorie
+                                <select id="product-cat">
+                                    <option value="Fournitures">📎 Fournitures</option>
+                                    <option value="Électronique">💻 Électronique</option>
+                                    <option value="Mobilier">🪑 Mobilier</option>
+                                    <option value="Autre">📦 Autre</option>
+                                </select>
+                            </label>
+                            <div class="two-col">
+                                <label>Prix (dh)
+                                    <input id="product-price" type="number" step="0.01" min="0" placeholder="0.00" required>
+                                </label>
+                                <label>Stock
+                                    <input id="product-stock" type="number" step="1" min="0" placeholder="0" required>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="margin-top:12px">
+                            <button id="product-save" type="submit" class="primary">Enregistrer</button>
+                            <button id="product-reset" type="reset" class="ghost">Réinitialiser</button>
+                        </div>
+                    </form>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <input id="product-search" type="text" placeholder="🔍 Rechercher...">
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table" id="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Prix</th>
+                                        <th>Stock</th>
+                                        <th style="width:90px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Droite : catalogue visuel avec onglets -->
+                <div class="catalogue-panel">
+                    <div class="card no-pad">
+                        <div class="tabs-bar" id="prod-tabs-bar">
+                            <button class="tab-btn active" data-cat="Tous"         onclick="switchProdTab(this)">Tous <span class="tab-count" id="ptc-Tous">0</span></button>
+                            <button class="tab-btn"        data-cat="Fournitures"  onclick="switchProdTab(this)">📎 Fournitures <span class="tab-count" id="ptc-Fournitures">0</span></button>
+                            <button class="tab-btn"        data-cat="Électronique" onclick="switchProdTab(this)">💻 Électronique <span class="tab-count" id="ptc-Électronique">0</span></button>
+                            <button class="tab-btn"        data-cat="Mobilier"     onclick="switchProdTab(this)">🪑 Mobilier <span class="tab-count" id="ptc-Mobilier">0</span></button>
+                            <button class="tab-btn"        data-cat="Autre"        onclick="switchProdTab(this)">📦 Autre <span class="tab-count" id="ptc-Autre">0</span></button>
+                        </div>
+                        <div class="tab-panel" id="prod-panel">
+                            <div class="products-grid" id="products-grid">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📦</div>
+                                    <p>Aucun produit encore.<br>Ajoutez-en un via le formulaire.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION NOUVELLE COMMANDE : catalogue cliquable + panier latéral -->
+        <section id="section-create-order" class="section">
+            <div class="section-top">
+                <div>
+                    <h2>Nouvelle commande</h2>
+                    <small class="muted">Cliquez sur un produit pour l'ajouter au panier</small>
+                </div>
+                <input type="text" id="order-catalogue-search" class="search-inline"
+                       placeholder="🔍 Rechercher un produit…" oninput="renderOrderCatalogue()">
+            </div>
+
+            <div class="order-layout">
+
+                <!-- Catalogue cliquable -->
+                <div>
+                    <div class="card no-pad">
+                        <div class="tabs-bar" id="order-tabs-bar">
+                            <button class="tab-btn active" data-cat="Tous"         onclick="switchOrderTab(this)">Tous <span class="tab-count" id="otc-Tous">0</span></button>
+                            <button class="tab-btn"        data-cat="Fournitures"  onclick="switchOrderTab(this)">📎 Fournitures <span class="tab-count" id="otc-Fournitures">0</span></button>
+                            <button class="tab-btn"        data-cat="Électronique" onclick="switchOrderTab(this)">💻 Électronique <span class="tab-count" id="otc-Électronique">0</span></button>
+                            <button class="tab-btn"        data-cat="Mobilier"     onclick="switchOrderTab(this)">🪑 Mobilier <span class="tab-count" id="otc-Mobilier">0</span></button>
+                            <button class="tab-btn"        data-cat="Autre"        onclick="switchOrderTab(this)">📦 Autre <span class="tab-count" id="otc-Autre">0</span></button>
+                        </div>
+                        <div class="tab-panel" id="order-panel">
+                            <div class="products-grid order-grid" id="order-products-grid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panier latéral + formulaire client -->
+                <div class="order-side">
+
+                    <div class="card no-pad cart-card">
+                        <div class="cart-header">
+                            <span class="cart-title">🛒 Panier</span>
+                            <span class="cart-badge" id="cart-count">0</span>
+                        </div>
+                        <div class="cart-items-wrap" id="cart-items-wrap">
+                            <div class="cart-empty">
+                                <div class="cart-empty-icon">🛍️</div>
+                                <p>Panier vide.<br>Cliquez sur un produit.</p>
+                            </div>
+                        </div>
+                        <div class="cart-footer-total">
+                            <span class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.07em;">Total</span>
+                            <span class="cart-total-val" id="cart-total">0.00 dh</span>
+                        </div>
+                    </div>
+
+                    <form id="order-form" class="card" autocomplete="off">
+                        <div class="form-col">
+                            <label>Client
+                                <input id="customer-name" type="text" placeholder="Nom du client" required>
+                            </label>
+                            <label>Notes
+                                <textarea id="order-notes" rows="3" placeholder="Notes (optionnel)"></textarea>
+                            </label>
+                        </div>
+                        <div class="form-actions" style="margin-top:12px">
+                            <button id="submit-order" type="submit" class="primary">✅ Enregistrer la commande</button>
+                            <button id="clear-cart" type="button" class="ghost">Vider</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION COMMANDES (identique à l'original) -->
+        <section id="section-orders" class="section">
+            <h2>Commandes</h2>
+            <div class="card">
+                <div class="card-header">
+                    <input id="order-search" type="text" placeholder="Rechercher par client ou ID...">
+                    <div class="header-actions">
+                        <button id="export-orders" type="button" class="ghost">Exporter JSON</button>
+                        <button id="clear-orders" type="button" class="ghost danger">Vider</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="table" id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Articles</th>
+                                <th>Total (dh)</th>
+                                <th style="width:100px">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">Stocké localement via localStorage • Aucune base de données requise</footer>
+
+    <!-- Modal fiche produit -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="modal-icon-big" id="modal-icon">📦</div>
+                <div>
+                    <div class="modal-pname" id="modal-name">Produit</div>
+                    <div class="muted" id="modal-cat" style="font-size:13px;margin-top:3px;">Catégorie</div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body-inner">
+                <div class="modal-price" id="modal-price">0.00 dh</div>
+                <div class="modal-info-grid">
+                    <div class="modal-info-box">
+                        <div class="modal-info-label">Stock disponible</div>
+                        <div class="modal-info-val" id="modal-stock">—</div>
+                    </div>
+                    <div class="modal-info-box">
+                        <div class="modal-info-label">Référence</div>
+                        <div class="modal-info-val" id="modal-ref">—</div>
+                    </div>
+                </div>
+                <div class="modal-qty-row">
+                    <input class="modal-qty-inp" type="number" id="modal-qty" min="1" value="1">
+                    <button class="primary" style="flex:1;padding:10px;" onclick="addFromModal()">＋ Ajouter au panier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="toast-wrap" id="toast-wrap"></div>
+
+    <script src="app.js"></script>
+    <script>
+        document.querySelectorAll('.nav-btn').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
+                btn.classList.add('active');
+                var target = btn.getAttribute('data-target');
+                document.querySelectorAll('.section').forEach(function(sec){ sec.classList.remove('visible'); });
+                var el = document.querySelector(target);
+                if(el){ el.classList.add('visible'); }
+            });
+        });
+    </script>
+</body>
+</html>
